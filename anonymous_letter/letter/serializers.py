@@ -7,7 +7,7 @@ class CreateLetterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Letter
-        fields = ('message', )
+        fields = ('message', 'codeword')
 
 
 class LetterSerializer(serializers.ModelSerializer):
