@@ -14,5 +14,5 @@ class LetterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Letter
-        fields = ('message', 'response')
-        read_only_fields = ('message', )
+        fields = ('message', 'answer', 'codeword')
+        read_only_fields = ('message', 'codeword')

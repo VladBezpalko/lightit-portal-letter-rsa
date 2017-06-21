@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Letter</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/2.3.1/jsencrypt.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+        $(document).ready(function(){
+
+            $("#question-send").click(function(e){
+                e.preventDefault();
+                var boss_pubkey;
+
+                $.ajax({
+                    async: false,
+                    method: "GET",
+                    url: API_URL + "/boss-pubkey/"
+                })
+                    .done(function(response) {
+                        boss_pubkey = response;
+                    });
+
+                var encrypt = new JSEncrypt();
+                encrypt.setPublicKey(boss_pubkey);
+                raw_message = JSON.stringify({
+                    question: $('#question-text').val(),
+                    pubkey: $('#question-pubkey').val(),
+                });
+                var encrypted_message = encrypt.encrypt(raw_message);
+                $.ajax({
+                    method: "POST",
+                    url: API_URL + "/letters/",
+                    data: {
+                        message: encrypted_message,
+                        codeword: $('#question-codeword').val(),
+                    }
+                })
+                    .done(function(response) {
+                        alert('Ok');
+                    });
+            });
+            letters = [];
+            $("#get-list-btn").click(function(e){
+                e.preventDefault();
+                $.ajax({
+                    method: "GET",
+                    url: API_URL + "/letters/",
+                    data: {answer__isnull: true},
+                })
+                    .done(function(response) {
+                        $('#questions-table tbody').empty();
+                        var decrypt = new JSEncrypt();
+                        decrypt.setPrivateKey($('#get-list-privkey').val());
+
+                        $.each(response, function(index, item) {
+                            message = JSON.parse(decrypt.decrypt(item.message));
+                            letters.push({
+                                codeword: item.codeword,
+                                pubkey: message.pubkey,
+                            });
+                            $('#questions-table').append(
+                                "<tr><td>" + index + "</td><td>" + message.question + "</td></tr>"
+                            );
+                        });
+                    });
+            });
+            $("#respond-btn").click(function(e){
+                e.preventDefault();
+                id = $("#list-id").val();
+                letter = letters[id];
+                var encrypt = new JSEncrypt();
+                encrypt.setPublicKey(letter.pubkey);
+                var encrypted_answer = encrypt.encrypt($('#respond-text').val());
+                $.ajax({
+                    method: "POST",
+                    url: API_URL + "/letters/" + letter.codeword + "/respond/",
+                    data: {answer: encrypted_answer}
+                })
+                    .done(function(response) {
+                        alert('Ok');
+                    });
+            });
+            $("#answer-btn").click(function(e){
+                e.preventDefault();
+                codeword = $("#answer-codeword").val();
+                privkey = $("#answer-privkey").val();
+                $.ajax({
+                    method: "GET",
+                    url: API_URL + "/letters/" + codeword + "/",
+                })
+                    .done(function(response) {
+                        var decrypt = new JSEncrypt();
+                        decrypt.setPrivateKey(privkey);
+                        var decrypted_answer = decrypt.decrypt(response.answer);
+                        alert(decrypted_answer);
+                    });
+            });
+        });
+    </script>
+</head>
+
+<body>
+<div class="col-md-6">
+    <h2>User forms</h2>
+    <div class="panel panel-default">
+        <div class="panel-heading">1. Form for asking questions</div>
+        <div class="panel-body">
+            <form>
+                <div class="form-group">
+                    <label for="question-text">Question</label>
+                    <textarea class="form-control" id="question-text"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="question-codeword">Codeword</label>
+                    <input type="text" class="form-control" id="question-codeword">
+
+                </div>
+                <div class="form-group">
+                    <label for="question-pubkey">Public Key</label>
+                    <textarea class="form-control" id="question-pubkey"></textarea>
+                </div>
+                <button class="btn btn-default" id="question-send">Submit</button>
+            </form>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">4. Form for getting answer</div>
+        <div class="panel-body">
+            <form>
+                <div class="form-group">
+                    <label for="answer-codeword">Codeword</label>
+                    <input type="text" class="form-control" id="answer-codeword">
+                </div>
+                <div class="form-group">
+                    <label for="answer-privkey">Your private key</label>
+                    <textarea class="form-control" id="answer-privkey"></textarea>
+                </div>
+                <button class="btn btn-default" id="answer-btn">Get answer</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="col-md-6">
+    <h2>Boss forms</h2>
+    <div class="panel panel-default">
+        <div class="panel-heading">2. Form for getting list of questions. Visible only for boss</div>
+        <div class="panel-body">
+            <form>
+                <div class="form-group">
+                    <label for="get-list-privkey">Boss private key</label>
+                    <textarea class="form-control" id="get-list-privkey"></textarea>
+                </div>
+                <table id="questions-table" class="table">
+                    <thead><td>#</td><td>Question</td></thead>
+                    <tbody></tbody>
+                </table>
+                <button class="btn btn-default" id="get-list-btn">Get list</button>
+            </form>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">3. Form for respond on questions. Visible only for boss</div>
+        <div class="panel-body">
+            <form>
+                <div class="form-group">
+                    <label for="list-id">Respond on #</label>
+                    <input type="text" class="form-control" id="list-id">
+                </div>
+                <div class="form-group">
+                    <label for="respond-text">Answer</label>
+                    <textarea class="form-control" id="respond-text"></textarea>
+                </div>
+                <button class="btn btn-default" id="respond-btn">Respond</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
