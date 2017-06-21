@@ -1,8 +1,11 @@
-from rest_framework.routers import DefaultRouter, SimpleRouter
+from django.conf.urls import url
+from rest_framework.routers import SimpleRouter
 
-from letter.views import LetterViewSet
+from letter.views import LetterViewSet, GetPubKeyView
 
 router = SimpleRouter()
 router.register('letters', LetterViewSet)
 
-urlpatterns = router.urls
+urlpatterns = [
+    url(r'^boss-pubkey/$', GetPubKeyView.as_view())
+] + router.urls
