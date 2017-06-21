@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Letter</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/2.3.1/jsencrypt.js"></script>
+    <script>
+        boss_pub_key = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDgpaEid2oQH7DObRGk425EFg6y" +
+                       "h3bs8B9wp2I8sGYnT6BD8RmEv3MdGEIRxqHUnfnvE5USKzzsoFzbR1t2OJ+ylIDv" +
+                       "QF2uxFFYtyIkZU5BcG14Mx9+/DgvdewPQS7f02wq6AN+QVP3SVN7Y1dFkh7rQoel" +
+                       "Nf1vjwxZIOii8ye11wIDAQAB";
+        $(document).ready(function(){
+            $("#send-button").click(function(e){
+                e.preventDefault();
+                var encrypt = new JSEncrypt();
+                encrypt.setPublicKey($('#pubkey').val());
+                var encrypted = encrypt.encrypt($('#message').val());
+                console.log(encrypted);
+            });
+            $("#get-button").click(function(e){
+                e.preventDefault();
+                var decrypt = new JSEncrypt();
+                decrypt.setPrivateKey($('#privkey').val());
+                var uncrypted = decrypt.decrypt($('#en-message').val());
+                console.log(uncrypted);
+            });
+        });
+    </script>
+</head>
+
+<body>
+    Send
+    <form id="send-form">
+        Enter message: <textarea id="message"></textarea><br>
+        Enter your public key: <textarea id="pubkey"></textarea><br>
+        <button id="send-button">Send</button>
+    </form>
+
+    Get
+    <form id="get-form">
+        Encoded message: <textarea id="en-message"></textarea><br>
+        Enter your private key: <textarea id="privkey"></textarea><br>
+        <button id="get-button">Send</button>
+    </form>
+
+</body>
+</html>
