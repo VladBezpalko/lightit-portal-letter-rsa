@@ -29,8 +29,6 @@
 2. Don't trusts scripts on page. Better perform all encrypting/decrypting operations by yourself. Now you can use curl for this.
 3. Better to use .onion instead https, this will enforce your anonimity.
 4. Use Tor Browser. Because someone can make fingerprint of your browser.
-5. Everyone knows it: keep you private key like your balls.
-6. For every question-answer use new keypair.
-7. When you delete old keypair, erase memory region with special tools. Usual deletion just deletes pointer.
-8. Don't enter tor without vpn. Don't connect to vpn from your home. You shout order vpn only for bitcoins. That bitcoins must be mixed.
-12. Don't trust anyone, including youself.
+5. For every question-answer use new keypair.
+6. When you delete old keypair, erase memory region with special tools. Usual deletion just deletes pointer.
+7. Don't enter tor without vpn. Don't connect to vpn from your home. You shout order vpn only for bitcoins. That bitcoins must be mixed.
